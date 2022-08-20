@@ -6,4 +6,4 @@ export const refs = {
     galleryEl: document.querySelector('.gallery'),
     btnLoadMoreEl: document.querySelector('.load-more'),
     totalHitsEl: document.querySelector('.total-hits'),
-}
+};
