@@ -3,13 +3,12 @@
 // import "simplelightbox/dist/simple-lightbox.min.css";
 // import fetchPictures from './js/fetchPictures';
 import {refs} from './js/refs';
-// import insertCreatedAnimals from './js/createListAnimals';
+import insertCreatedAnimals from './js/createListAnimals';
 // import smoothScrollToBottomPage from './js/smoothScrollToButtomPage';
 import PicturesApiService from './js/fetchPictures';
 
 const picturesApiServise = new PicturesApiService;
 
-// let currentPage = 1;
 // refs.btnLoadMoreEl.classList.add('hide');
 // const lightbox = new SimpleLightbox('.gallery a', { captions: true, captionSelector: 'img', captionsData: 'alt', captionPosition: 'bottom', captionDelay: 250 });
 
@@ -19,12 +18,17 @@ refs.btnLoadMoreEl.addEventListener('click', onClickBtnLodeMore);
 function onSubmitForm (event) {
     event.preventDefault();
     // refs.btnLoadMoreEl.classList.add('hide');
-    console.log(event.currentTarget.elements.searchQuery.value);
     picturesApiServise.query = event.currentTarget.elements.searchQuery.value;
-    picturesApiServise.fetchArticles();
+    picturesApiServise.resetPage();
+    clearGalleryList();
+    picturesApiServise.fetchArticles().then(insertCreatedAnimals);
 }
 function onClickBtnLodeMore () {
-    picturesApiServise.fetchArticles();
+
+    picturesApiServise.fetchArticles().then(insertCreatedAnimals);
+}
+function clearGalleryList () {
+    refs.galleryEl.innerHTML = "";
 }
 
        
@@ -57,7 +61,5 @@ function onClickBtnLodeMore () {
 //         return;
 //     }
 // }
-// function clearGalleryList () {
-//     refs.galleryEl.innerHTML = "";
-// }
+
 
