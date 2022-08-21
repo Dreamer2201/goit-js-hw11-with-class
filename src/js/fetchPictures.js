@@ -12,8 +12,7 @@ export default class PicturesApiService {
         return fetch(url)
         .then(r => r.json())
         .then(data => {
-            this.incrementPage();
-            return data.hits;
+            return data;
         });
     }
     incrementPage() {

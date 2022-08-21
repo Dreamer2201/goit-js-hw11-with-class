@@ -1,7 +1,6 @@
-// // import {Notify} from 'notiflix/build/notiflix-notify-aio';
-// import SimpleLightbox from "simplelightbox";
-// import "simplelightbox/dist/simple-lightbox.min.css";
-// import fetchPictures from './js/fetchPictures';
+import {Notify} from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 import {refs} from './js/refs';
 import insertCreatedAnimals from './js/createListAnimals';
 // import smoothScrollToBottomPage from './js/smoothScrollToButtomPage';
@@ -9,29 +8,56 @@ import PicturesApiService from './js/fetchPictures';
 
 const picturesApiServise = new PicturesApiService;
 
-// refs.btnLoadMoreEl.classList.add('hide');
-// const lightbox = new SimpleLightbox('.gallery a', { captions: true, captionSelector: 'img', captionsData: 'alt', captionPosition: 'bottom', captionDelay: 250 });
+refs.btnLoadMoreEl.classList.add('hide');
+const lightbox = new SimpleLightbox('.gallery a', { captions: true, captionSelector: 'img', captionsData: 'alt', captionPosition: 'bottom', captionDelay: 250 });
 
 refs.formEl.addEventListener('submit', onSubmitForm);
 refs.btnLoadMoreEl.addEventListener('click', onClickBtnLodeMore);
 
 function onSubmitForm (event) {
     event.preventDefault();
-    // refs.btnLoadMoreEl.classList.add('hide');
     picturesApiServise.query = event.currentTarget.elements.searchQuery.value;
     picturesApiServise.resetPage();
-    clearGalleryList();
-    picturesApiServise.fetchArticles().then(insertCreatedAnimals);
+    picturesApiServise.fetchArticles().then(array => {
+        clearGalleryList();
+        Notify.info(`We has found ${array.total} results.`);
+        filterFetchResult(array);
+        insertCreatedAnimals(array.hits)});
 }
 function onClickBtnLodeMore () {
-
-    picturesApiServise.fetchArticles().then(insertCreatedAnimals);
+    picturesApiServise.incrementPage();
+    picturesApiServise.fetchArticles().then(array => {
+        filterFetchResult(array);
+        insertCreatedAnimals(array.hits)
+    });
 }
 function clearGalleryList () {
     refs.galleryEl.innerHTML = "";
 }
+function filterFetchResult(fetchResult) {
+    if (picturesApiServise.page === Math.ceil(fetchResult.totalHits / 20)) {
+        console.log(picturesApiServise.page);
+        console.log(Math.ceil(fetchResult.totalHits / 20));
+        insertCreatedAnimals(fetchResult.hits); 
+        refs.btnLoadMoreEl.classList.add('hide'); 
+        Notify.info("We're sorry, but you've reached the end of search results.");
+        // smoothScrollToBottomPage();
+        lightbox.refresh();
+        return;
+    } else if (fetchResult.total === 0) {
+        Notify.failure("Sorry, there are no images matching your search query. Please try again.");   
+        return;
+    } else { 
+        insertCreatedAnimals(fetchResult.hits);  
+        console.log(picturesApiServise.page);
+        console.log(Math.ceil(fetchResult.totalHits / 20));
+        refs.btnLoadMoreEl.classList.remove('hide');
+        // smoothScrollToBottomPage();
+        lightbox.refresh();
+        return;
+    }
+}
 
-       
 // async function convertFetchResults (searchQuery, currentPage) {
 //     try {
 //         const fetchResult = await fetchPictures(searchQuery, currentPage);  
@@ -41,25 +67,6 @@ function clearGalleryList () {
 //         filterFetchResult(fetchResult);
 //     } catch (error) {console.log(error)}
 // }
-// function filterFetchResult(fetchResult) {
-//     if (currentPage === Math.ceil(fetchResult.totalHits / 40)) {
-//         insertCreatedAnimals(fetchResult.hits);  
-//         refs.btnLoadMoreEl.classList.add('hide');
-//         Notify.info("We're sorry, but you've reached the end of search results.");
-//         smoothScrollToBottomPage();
-//         lightbox.refresh();
-//         return;
-//     } else if (fetchResult.total === 0) {
-//         refs.btnLoadMoreEl.classList.add('hide');
-//         Notify.failure("Sorry, there are no images matching your search query. Please try again.");   
-//         return;
-//     } else { 
-//         insertCreatedAnimals(fetchResult.hits);  
-//         refs.btnLoadMoreEl.classList.remove('hide');
-//         smoothScrollToBottomPage();
-//         lightbox.refresh();
-//         return;
-//     }
-// }
+
 
 
