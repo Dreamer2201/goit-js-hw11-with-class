@@ -3,7 +3,6 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import {refs} from './js/refs';
 import insertCreatedAnimals from './js/createListAnimals';
-// import smoothScrollToBottomPage from './js/smoothScrollToButtomPage';
 import PicturesApiService from './js/fetchPictures';
 
 const picturesApiServise = new PicturesApiService;
@@ -14,34 +13,34 @@ const lightbox = new SimpleLightbox('.gallery a', { captions: true, captionSelec
 refs.formEl.addEventListener('submit', onSubmitForm);
 refs.btnLoadMoreEl.addEventListener('click', onClickBtnLodeMore);
 
-function onSubmitForm (event) {
+async function onSubmitForm (event) {
     event.preventDefault();
     picturesApiServise.query = event.currentTarget.elements.searchQuery.value;
     picturesApiServise.resetPage();
-    picturesApiServise.fetchArticles().then(array => {
+    try { 
+        const array = await picturesApiServise.fetchArticles();
         clearGalleryList();
         Notify.info(`We has found ${array.total} results.`);
         filterFetchResult(array);
-        insertCreatedAnimals(array.hits)});
+        insertCreatedAnimals(array.hits);        
+    } catch (error) { console.log(error) };
 }
-function onClickBtnLodeMore () {
+async function onClickBtnLodeMore () {
     picturesApiServise.incrementPage();
-    picturesApiServise.fetchArticles().then(array => {
+    try {
+        const array = await picturesApiServise.fetchArticles();
         filterFetchResult(array);
-        insertCreatedAnimals(array.hits)
-    });
+        insertCreatedAnimals(array.hits);
+    } catch (error) { console.log(error) };
 }
 function clearGalleryList () {
     refs.galleryEl.innerHTML = "";
 }
 function filterFetchResult(fetchResult) {
     if (picturesApiServise.page === Math.ceil(fetchResult.totalHits / 20)) {
-        console.log(picturesApiServise.page);
-        console.log(Math.ceil(fetchResult.totalHits / 20));
         insertCreatedAnimals(fetchResult.hits); 
         refs.btnLoadMoreEl.classList.add('hide'); 
         Notify.info("We're sorry, but you've reached the end of search results.");
-        // smoothScrollToBottomPage();
         lightbox.refresh();
         return;
     } else if (fetchResult.total === 0) {
@@ -49,24 +48,10 @@ function filterFetchResult(fetchResult) {
         return;
     } else { 
         insertCreatedAnimals(fetchResult.hits);  
-        console.log(picturesApiServise.page);
-        console.log(Math.ceil(fetchResult.totalHits / 20));
         refs.btnLoadMoreEl.classList.remove('hide');
-        // smoothScrollToBottomPage();
         lightbox.refresh();
         return;
     }
 }
-
-// async function convertFetchResults (searchQuery, currentPage) {
-//     try {
-//         const fetchResult = await fetchPictures(searchQuery, currentPage);  
-//         if (currentPage === 1) {
-//             Notify.info(`Hooray! We found ${fetchResult.totalHits} images.`);
-//         }
-//         filterFetchResult(fetchResult);
-//     } catch (error) {console.log(error)}
-// }
-
 
 
